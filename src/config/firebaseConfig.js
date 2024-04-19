@@ -1,5 +1,6 @@
 // src/config/firebaseConfig.js
-import * as firebase from 'firebase';
+import {initializeApp} from 'firebase/app';
+import {getDatabase, ref, push} from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyD9a311G9MkXIQF6UD1xTrBt6I-U123ozo',
@@ -12,8 +13,9 @@ const firebaseConfig = {
   appId: '1:647040789893:android:fc7c16640825ace51028ec',
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+// 初始化 Firebase 应用
+const app = initializeApp(firebaseConfig);
+// 获取数据库实例
+const database = getDatabase(app);
 
-export const database = firebase.database();
+export {database};
