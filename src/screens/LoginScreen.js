@@ -6,20 +6,31 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import {Button} from 'react-native-paper';
+import {Button, Snackbar} from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 
 const SignInScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [visible, setVisible] = useState(false);
 
   const handleSignIn = async () => {
+    if (!email || !password) {
+      setError('メールアドレスとパスワードを入力してください。');
+      setVisible(true);
+      return;
+    }
     try {
       await auth().signInWithEmailAndPassword(email, password);
     } catch (error) {
-      console.error(error);
+      // 错误处理
+      setError(error.message);
+      setVisible(true);
     }
   };
+
+  const onDismissSnackBar = () => setVisible(false);
 
   return (
     <View style={styles.container}>
@@ -30,6 +41,7 @@ const SignInScreen = ({navigation}) => {
         value={email}
         placeholder="メールアドレス"
         keyboardType="email-address"
+        autoCapitalize="none"
       />
       <TextInput
         style={styles.input}
@@ -37,8 +49,13 @@ const SignInScreen = ({navigation}) => {
         value={password}
         placeholder="パスワード"
         secureTextEntry
+        autoCapitalize="none"
       />
-      <Button mode="contained" onPress={handleSignIn} style={styles.button}>
+      <Button
+        mode="contained"
+        onPress={handleSignIn}
+        style={styles.button}
+        disabled={!email || !password}>
         ログイン
       </Button>
       <TouchableOpacity onPress={() => navigation.navigate('Register')}>
@@ -46,6 +63,9 @@ const SignInScreen = ({navigation}) => {
           アカウントをお持ちでないですか？<Text style={styles.link}>登録</Text>
         </Text>
       </TouchableOpacity>
+      <Snackbar visible={visible} onDismiss={onDismissSnackBar} duration={3000}>
+        {error}
+      </Snackbar>
     </View>
   );
 };

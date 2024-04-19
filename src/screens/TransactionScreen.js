@@ -5,6 +5,7 @@ import {categories, transactionTypes} from '../config/constants';
 import {ref, push, onValue, off} from 'firebase/database';
 import {TextInput, Button, Text, Snackbar} from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import auth from '@react-native-firebase/auth'; // 导入Firebase Auth库
 
 const TransactionScreen = () => {
   const [amount, setAmount] = useState('');
@@ -14,6 +15,14 @@ const TransactionScreen = () => {
   const [transactions, setTransactions] = useState([]);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [snackbarText, setSnackbarText] = useState('');
+  const [user, setUser] = useState(null); // 状态来存储当前登录用户
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(currentUser => {
+      setUser(currentUser); // 设置当前用户
+    });
+    return subscriber;
+  }, []);
 
   useEffect(() => {
     const transRef = ref(database, '/transactions');
@@ -33,18 +42,25 @@ const TransactionScreen = () => {
       setSnackbarText('金額を入力してください。');
       return;
     }
+    if (!user) {
+      setSnackbarText('ログインしてください。');
+      return;
+    }
+
     const transRef = ref(database, '/transactions');
     const newTrans = {
       amount,
       category,
       type,
       date: date.toISOString().split('T')[0], // YYYY-MM-DD
+      userId: user.uid, // 将用户ID添加到事务数据中
     };
     push(transRef, newTrans).then(() => {
       setSnackbarText(
-        `金额: ${amount}円, カテゴリー: ${
-          categories.find(c => c.id === category).name
-        }, 取引タイプ: ${transactionTypes.find(t => t.id === type).name}`,
+        `登録できました：
+      金额: ${amount}円 
+      カテゴリー: ${categories.find(c => c.id === category).name} 
+      取引タイプ: ${transactionTypes.find(t => t.id === type).name}`,
       );
       setAmount('');
       setDate(new Date());
@@ -122,7 +138,7 @@ const TransactionScreen = () => {
       <Snackbar
         visible={!!snackbarText}
         onDismiss={() => setSnackbarText('')}
-        duration={3000}
+        duration={6000}
         style={styles.snackbar}>
         {snackbarText}
       </Snackbar>

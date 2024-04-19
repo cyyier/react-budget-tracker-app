@@ -1,26 +1,40 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { Button } from 'react-native-paper';
+import React, {useState} from 'react';
+import {View, StyleSheet, Text, TextInput, Alert} from 'react-native';
+import {Button} from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 
-const RegisterScreen = () => {
+const RegisterScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [birthday, setBirthday] = useState('');
-  const [gender, setGender] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
+    if (!email || !password || !confirmPassword) {
+      Alert.alert('エラー', '全ての項目を入力してください。');
+      return;
+    }
     if (password !== confirmPassword) {
       Alert.alert('エラー', 'パスワードが一致しません。');
       return;
     }
-
+    setLoading(true);
     try {
-      await auth().createUserWithEmailAndPassword(email, password);
-      // 可能的话，你也可以添加额外的用户信息保存逻辑
+      const newUser = await auth().createUserWithEmailAndPassword(
+        email,
+        password,
+      );
+      await newUser.user.sendEmailVerification(); // 发送验证邮件
+      Alert.alert(
+        '登録成功',
+        '確認メールを送信しました。メールを確認してください。',
+        [{text: 'OK', onPress: () => navigation.navigate('Login')}],
+      );
     } catch (error) {
       console.error(error);
+      Alert.alert('登録エラー', error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,6 +47,7 @@ const RegisterScreen = () => {
         value={email}
         placeholder="メールアドレス"
         keyboardType="email-address"
+        autoCapitalize="none"
       />
       <TextInput
         style={styles.input}
@@ -48,7 +63,11 @@ const RegisterScreen = () => {
         placeholder="パスワードを再入力"
         secureTextEntry
       />
-      <Button mode="contained" onPress={handleRegister} style={styles.button}>
+      <Button
+        mode="contained"
+        onPress={handleRegister}
+        style={styles.button}
+        disabled={loading}>
         登録
       </Button>
     </View>
