@@ -5,24 +5,19 @@ import {categories, transactionTypes} from '../config/constants';
 import {ref, push, onValue, off} from 'firebase/database';
 import {TextInput, Button, Text, Snackbar} from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import auth from '@react-native-firebase/auth'; // 导入Firebase Auth库
+import {useAuth} from '../contexts/AuthContext';
 
 const TransactionScreen = () => {
   const [amount, setAmount] = useState('');
+  const [note, setNote] = useState('');
   const [category, setCategory] = useState(categories[0].id);
   const [type, setType] = useState(transactionTypes[0].id);
   const [date, setDate] = useState(new Date());
   const [transactions, setTransactions] = useState([]);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [snackbarText, setSnackbarText] = useState('');
-  const [user, setUser] = useState(null); // 状态来存储当前登录用户
 
-  useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(currentUser => {
-      setUser(currentUser); // 设置当前用户
-    });
-    return subscriber;
-  }, []);
+  const {currentUser} = useAuth();
 
   useEffect(() => {
     const transRef = ref(database, '/transactions');
@@ -42,7 +37,7 @@ const TransactionScreen = () => {
       setSnackbarText('金額を入力してください。');
       return;
     }
-    if (!user) {
+    if (!currentUser) {
       setSnackbarText('ログインしてください。');
       return;
     }
@@ -52,8 +47,10 @@ const TransactionScreen = () => {
       amount,
       category,
       type,
+      note,
       date: date.toISOString().split('T')[0], // YYYY-MM-DD
-      userId: user.uid, // 将用户ID添加到事务数据中
+      userId: currentUser.uid, // 将用户ID添加到事务数据中
+      userEmail: currentUser.email,
     };
     push(transRef, newTrans).then(() => {
       setSnackbarText(
@@ -63,6 +60,7 @@ const TransactionScreen = () => {
       取引タイプ: ${transactionTypes.find(t => t.id === type).name}`,
       );
       setAmount('');
+      setNote('');
       setDate(new Date());
       setCategory(categories[0].id);
       setType(transactionTypes[0].id);
@@ -111,6 +109,14 @@ const TransactionScreen = () => {
           </Button>
         ))}
       </View>
+
+      <TextInput
+        label="メモ"
+        value={note}
+        onChangeText={text => setNote(text)}
+        mode="outlined"
+        style={styles.amountInput}
+      />
 
       <Button
         mode="text"
@@ -181,10 +187,11 @@ const styles = StyleSheet.create({
     marginTop: 30,
     minHeight: 25,
     paddingVertical: 4,
+    bottom: 18,
   },
   snackbar: {
     position: 'absolute',
-    bottom: 60,
+    bottom: 0,
     opacity: 0.85, // Adjusted for visibility
   },
 });

@@ -8,8 +8,9 @@ import {
 } from 'react-native';
 import {Button, Snackbar} from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
+import {useNavigation} from '@react-navigation/native';
 
-const SignInScreen = ({navigation}) => {
+const LoginScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,8 +24,8 @@ const SignInScreen = ({navigation}) => {
     }
     try {
       await auth().signInWithEmailAndPassword(email, password);
+      navigation.replace('AuthStackScreen');
     } catch (error) {
-      // 错误处理
       setError(error.message);
       setVisible(true);
     }
@@ -58,7 +59,8 @@ const SignInScreen = ({navigation}) => {
         disabled={!email || !password}>
         ログイン
       </Button>
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Auth', {screen: 'Register'})}>
         <Text style={styles.register}>
           アカウントをお持ちでないですか？<Text style={styles.link}>登録</Text>
         </Text>
@@ -103,4 +105,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignInScreen;
+export default LoginScreen;
