@@ -1,3 +1,6 @@
+/* eslint-disable react/no-unstable-nested-components */
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable prettier/prettier */
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
@@ -12,6 +15,7 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import UserInfoScreen from './src/screens/UserInfoScreen';
 import AuthStackScreen from './src/screens/AuthStackScreen';
 import {AuthProvider, useAuth} from './src/contexts/AuthContext';
+import DashboardScreen from './src/screens/DashboardScreen';
 
 const Tab = createMaterialBottomTabNavigator();
 const AuthStack = createStackNavigator();
@@ -39,7 +43,7 @@ function MyTabs() {
       shifting={true}
       barStyle={{backgroundColor: '#694fad'}}
       screenOptions={({route}) => ({
-        tabBarIcon: ({focused, color, size}) => {
+        tabBarIcon: ({focused}) => {
           let iconName;
           if (route.name === 'Transaction') {
             iconName = focused
@@ -54,12 +58,24 @@ function MyTabs() {
               ? require('./android/app/src/main/assets/images/user_active.png')
               : require('./android/app/src/main/assets/images/user_unactive.png');
           }
+          else if (route.name === 'Dashboard') {
+            iconName = focused
+              ? require('./android/app/src/main/assets/images/dashboard_active.png')
+              : require('./android/app/src/main/assets/images/dashboard_unactive.png');
+          }
 
           return <Image source={iconName} style={{width: 28, height: 28}} />;
         },
       })}>
       {currentUser ? (
         <>
+          <Tab.Screen
+            name="Dashboard"
+            component={DashboardScreen}
+            options={{
+              tabBarLabel: 'れぽ',
+            }}
+          />
           <Tab.Screen
             name="Transaction"
             component={TransactionScreen}

@@ -8,7 +8,7 @@ import {
   Text,
 } from 'react-native';
 import {database} from '../config/firebaseConfig';
-import {ref, onValue, remove, off} from 'firebase/database';
+import {ref, onValue, remove, update} from 'firebase/database';
 import {categories, transactionTypes} from '../config/constants';
 import {
   Card,
@@ -17,6 +17,9 @@ import {
   Title,
   TextInput,
   Snackbar,
+  Dialog,
+  Portal,
+  Provider,
 } from 'react-native-paper';
 import {Picker} from '@react-native-picker/picker';
 
@@ -33,6 +36,14 @@ const TransactionsListScreen = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarText, setSnackbarText] = useState('');
+
+  const [editDialogVisible, setEditDialogVisible] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [editAmount, setEditAmount] = useState('');
+  const [editCategory, setEditCategory] = useState('all');
+  const [editType, setEditType] = useState('all');
+  const [editNote, setEditNote] = useState('');
+  const [editDate, setEditDate] = useState(new Date());
 
   const availableYears = ['all', '2024', '2025'];
   const months = [
@@ -76,6 +87,7 @@ const TransactionsListScreen = () => {
             formattedData.sort((a, b) => b.date - a.date); // 假设使用日期排序，新日期在前
             setTransactions(formattedData);
             setFilteredTransactions(formattedData);
+            calculateTotalAmount(formattedData);
           } else {
             setTransactions([]);
             setFilteredTransactions([]);
@@ -128,10 +140,15 @@ const TransactionsListScreen = () => {
   };
 
   const calculateTotalAmount = transactionitems => {
-    const total = transactionitems.reduce(
-      (sum, item) => sum + parseInt(item.amount, 10),
-      0,
-    );
+    const total = transactionitems.reduce((sum, item) => {
+      if (
+        !(selectedUser === 'all' && item.typeName === '送金') &&
+        item.typeName !== '収入'
+      ) {
+        sum += parseInt(item.amount, 10);
+      }
+      return sum;
+    }, 0);
     setTotalAmount(total);
   };
 
@@ -182,6 +199,103 @@ const TransactionsListScreen = () => {
     );
     setTotalAmount(total);
   }, [transactions]); // 只有当transactions变化时，才重新计算
+
+  // eslint-disable-next-line react/no-unstable-nested-components
+  const EditDialog = () => (
+    <Provider>
+      <Portal>
+        <Dialog
+          visible={editDialogVisible}
+          onDismiss={() => setEditDialogVisible(false)}>
+          <Dialog.Title>編集する</Dialog.Title>
+          <Dialog.Content>
+            <TextInput
+              label="金額"
+              value={editAmount}
+              onChangeText={setEditAmount}
+              keyboardType="numeric"
+              style={styles.input}
+            />
+            <Picker
+              selectedValue={editCategory}
+              onValueChange={setEditCategory}
+              style={styles.picker}>
+              {categories.map(category => (
+                <Picker.Item
+                  key={category.id}
+                  label={category.name}
+                  value={category.id}
+                />
+              ))}
+            </Picker>
+            <Picker
+              selectedValue={editType}
+              onValueChange={setEditType}
+              style={styles.picker}>
+              {transactionTypes.map(type => (
+                <Picker.Item key={type.id} label={type.name} value={type.id} />
+              ))}
+            </Picker>
+            <TextInput
+              label="備考"
+              value={editNote}
+              onChangeText={setEditNote}
+              style={styles.input}
+            />
+            {/* 添加日期选择组件 */}
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={handleSaveEdit}>保存</Button>
+            <Button onPress={() => setEditDialogVisible(false)}>
+              キャンセル
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </Provider>
+  );
+
+  const handleEdit = transaction => {
+    setEditingTransaction(transaction);
+    setEditAmount(transaction.amount.toString());
+    setEditCategory(transaction.category);
+    setEditType(transaction.type);
+    setEditNote(transaction.note);
+    setEditDate(transaction.date);
+    setEditDialogVisible(true);
+  };
+
+  const handleSaveEdit = () => {
+    const updatedTransaction = {
+      ...editingTransaction,
+      amount: editAmount,
+      category: editCategory,
+      type: editType,
+      note: editNote,
+      date: editDate,
+    };
+
+    const transactionRef = ref(
+      database,
+      `/transactions/${editingTransaction.id}`,
+    );
+    update(transactionRef, updatedTransaction)
+      .then(() => {
+        setTransactions(prevTransactions =>
+          prevTransactions.map(transaction =>
+            transaction.id === editingTransaction.id
+              ? updatedTransaction
+              : transaction,
+          ),
+        );
+        setEditDialogVisible(false);
+      })
+      .catch(error => {
+        console.error('Error updating transaction:', error);
+        setSnackbarText(`Error updating transaction: ${error.message}`);
+        setSnackbarVisible(true);
+      });
+  };
 
   return (
     <View style={styles.container}>
@@ -285,9 +399,13 @@ const TransactionsListScreen = () => {
                 {`\n${item.date.getFullYear()}.${
                   item.date.getMonth() + 1
                 }.${item.date.getDate()}`}{' '}
+                {item.isRecurring && '定期記帳'}
               </Paragraph>
             </Card.Content>
             <Card.Actions>
+              <Button mode="text" onPress={() => handleEdit(item)}>
+                編集
+              </Button>
               <Button mode="text" onPress={() => handleDelete(item.id)}>
                 削除
               </Button>
@@ -295,6 +413,7 @@ const TransactionsListScreen = () => {
           </Card>
         )}
       />
+      <EditDialog />
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
