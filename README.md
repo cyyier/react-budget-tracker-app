@@ -1,79 +1,58 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# react-native-budget-tracker-app（おうち家計簿）
 
-# Getting Started
+ペア向けの家計管理アプリです。  
+収支・送金の記録、カテゴリごとの分類、月別の統計表示、貢献度（支出割合）の自動計算など、日常的な支出管理を簡潔に行うことができます。
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+---
 
-## Step 1: Start the Metro Server
+## 主な機能
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+- ユーザー登録・ログイン（メールアドレス＋パスワード認証）
+- 支出・収入・送金の記録（カテゴリ・相手・メモ・定期支出対応）
+- 月ごとの統計情報表示（カテゴリ別 / 支払い相手別 / 金額順）
+- 支出の貢献度（支出割合）自動計算
+- 定期支出の自動追加（Firebase Functions による月初実行）
+- フィルター機能（カテゴリ / タイプ / 金額範囲など）
+- グラフ表示（棒グラフ / 円グラフ）
+- データの編集・削除機能
 
-To start Metro, run the following command from the _root_ of your React Native project:
+---
 
-```bash
-# using npm
-npm start
+## 技術スタック
 
-# OR using Yarn
-yarn start
-```
+- フレームワーク：React Native（Expo）
+- UIライブラリ：React Native Paper
+- 認証：Firebase Authentication（メールアドレス＋パスワード方式）
+- データベース：Firebase Realtime Database
+- バックエンド処理：Firebase Cloud Functions（定期実行）
+- グラフ描画：react-native-chart-kit
+---
 
-## Step 2: Start your Application
+## 学んだこと
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+- Firebase Authentication による認証フローの構築
+- Realtime Database を用いたデータ構造設計と CRUD 処理
+- Firebase Cloud Functions を使った定期実行ロジック（月初支出の自動追加）
+- React Native Paper による UI 実装
+- react-native-chart-kit を使ったグラフ描画と集計ロジックの構築
+- Expo を用いたクロスプラットフォーム開発とビルドフローの習得
+- ユーザーごとの支出集計・割合計算など、ロジックと UI の連動実装
+---
 
-### For Android
 
-```bash
-# using npm
-npm run android
+## 今後追加予定の機能
 
-# OR using Yarn
-yarn android
-```
+- 複数グループへの対応（グループごとのデータ分離）
+- 支払い証憑の画像アップロード機能
+- 通知機能（定期支出のお知らせなど）
 
-### For iOS
+---
 
-```bash
-# using npm
-npm run ios
+## スクリーンショット
+<img src="https://github.com/user-attachments/assets/99db1840-4eef-4f17-80c7-bc0ff445482f" width="200" />
+<img src="https://github.com/user-attachments/assets/d79ae0eb-320b-4002-bc1b-07d89fd5d796" width="200" />
+<img src="https://github.com/user-attachments/assets/e1fb3d33-bcae-4b0b-b352-5986390dd14c" width="200" />
+<img src="https://github.com/user-attachments/assets/5716eeff-a2fe-482c-adf1-aaa1ec497b7b" width="200" />
+<img src="https://github.com/user-attachments/assets/e1f5af8d-2330-443e-bfdb-6b8e38c975f6" width="200" />
 
-# OR using Yarn
-yarn ios
-```
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
-
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
-
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
